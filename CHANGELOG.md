@@ -1,3 +1,4 @@
 ## 0.0.1
 
-* TODO: Describe initial release.
+* Added SimpleWorker and SimpleWorker.compute
+* Added Tests for SimpleWorker and SimpleWorker.compute
