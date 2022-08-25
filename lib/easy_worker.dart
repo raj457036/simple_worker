@@ -55,8 +55,8 @@ class Entrypoint<T> {
 /// spawned isolate. The entry-point function is invoked in the new isolate
 /// with [message] as the only argument.
 /// {@endtemplate}
-class SimpleWorker {
-  SimpleWorker(
+class EasyWorker {
+  EasyWorker(
     void Function(SendPort from) entrypoint, {
     required String workerName,
     dynamic initialMessage,
@@ -159,7 +159,7 @@ class SimpleWorker {
     String name = "",
   }) async {
     final onError = ReceivePort();
-    final worker = SimpleWorker(
+    final worker = EasyWorker(
       Entrypoint(entrypoint),
       workerName: "compute${name.trim().isEmpty ? "" : ":$name"}",
       initialMessage: payload,

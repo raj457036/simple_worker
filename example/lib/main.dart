@@ -1,7 +1,7 @@
 import 'dart:io';
 
+import 'package:easy_worker/easy_worker.dart';
 import 'package:flutter/material.dart';
-import 'package:simple_worker/simple_worker.dart';
 
 void main() {
   runApp(const MyApp());
@@ -35,14 +35,14 @@ class _MyHomePageState extends State<MyHomePage> {
   int _counter = 0;
 
   /// declare worker
-  late final SimpleWorker worker;
+  late final EasyWorker worker;
 
   @override
   void initState() {
     super.initState();
 
     /// initialize worker with first payload
-    worker = SimpleWorker(
+    worker = EasyWorker(
       Entrypoint(calculateFactorial),
       workerName: "Factorial Calculator",
       initialMessage: _counter,
@@ -60,7 +60,7 @@ class _MyHomePageState extends State<MyHomePage> {
       number--;
       // just to simulate long running task with blocking operation
       // (operation that can freeze the ui thread)
-      sleep(const Duration(seconds: 1));
+      sleep(const Duration(milliseconds: 100));
     }
 
     /// once done send the calculated result

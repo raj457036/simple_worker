@@ -1,9 +1,9 @@
+import 'package:easy_worker/easy_worker.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:simple_worker/simple_worker.dart';
 
 void main() {
   test('test long running worker', () async {
-    final worker = SimpleWorker(
+    final worker = EasyWorker(
       Entrypoint((message, send) async {
         // return series of number upto 4 at an interval of 1 sec
         int count = 4;
@@ -31,7 +31,7 @@ void main() {
 
   test('test short running worker', () async {
     /// returns factorial of a number
-    final result = await SimpleWorker.compute<int, int>(
+    final result = await EasyWorker.compute<int, int>(
       (message, send) {
         int temp = message;
         message--;

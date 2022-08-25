@@ -1,10 +1,10 @@
-# Simple Worker
+# Easy Worker
 
 Working with Dart Isolate is not very easy for beginners and tedious to write
 big boilerplate code for veteran and even though there are lot of packages to 
 solve this issue none were exactly as straight forward as they try to be.
 
-Well then **SimpleWorker** might be the simplest way to work with dart isolate
+Well then **EasyWorker** might be the simplest way to work with dart isolate
 so far. (🙂 if you don't think so not my problem.) 
 
 ## Features
@@ -52,7 +52,7 @@ void calculateFactorial(int number, Sender send) {
 - **A simple worker instance**
 
 ```dart
-final worker = SimpleWorker(
+final worker = EasyWorker(
       Entrypoint(calculateFactorial),
       workerName: "Factorial Calculator",
       initialMessage: 0, // the initial payload for this worker will be 0
@@ -86,7 +86,7 @@ worker.send(6);
 
 ```dart
 /// just call compute and pass your entrypoint and payload
-final result = await SimpleWorker.compute(calculateFactorial, 5);
+final result = await EasyWorker.compute(calculateFactorial, 5);
 
 print(result); // 120
 

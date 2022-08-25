@@ -1,4 +1,4 @@
 ## 0.0.1
 
-* Added SimpleWorker and SimpleWorker.compute
-* Added Tests for SimpleWorker and SimpleWorker.compute
+* Added EasyWorker and EasyWorker.compute
+* Added Tests for EasyWorker and EasyWorker.compute
