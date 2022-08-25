@@ -3,9 +3,10 @@ library isolate_helper;
 import 'dart:async';
 import 'dart:isolate';
 
-dynamic kWorkerExitCode = 0x010101;
 typedef Sender = void Function(Object? message);
 typedef WorkerEntrypoint<T> = Function(T message, Sender send);
+
+class _WorkerExit {}
 
 /// {@template entrypoint}
 /// A wrapper that creates two way communication possible.
@@ -37,7 +38,7 @@ class Entrypoint<T> {
     final ReceivePort receivePort = ReceivePort();
     sendport.send(receivePort.sendPort);
     receivePort.listen((message) {
-      if (message == kWorkerExitCode) {
+      if (message is _WorkerExit) {
         receivePort.close();
         return;
       }
@@ -185,7 +186,7 @@ class EasyWorker {
   /// dispose all the resources and close the worker
   void dispose() {
     _controller.close();
-    _toIsolate.send(kWorkerExitCode);
+    _toIsolate.send(_WorkerExit());
     _fromIsolate.close();
   }
 }
