@@ -1,7 +1,8 @@
 name: simple_worker
 description: A package to make isolate usage as easy as possible.
 version: 0.0.1
-homepage:
+homepage: https://github.com/raj457036/simple_worker
+repository: https://github.com/raj457036/simple_worker
 
 environment:
   sdk: ">=2.17.6 <3.0.0"

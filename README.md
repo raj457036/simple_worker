@@ -1,3 +1,5 @@
+# Simple Worker
+
 Working with Dart Isolate is not very easy for beginners and tedious to write
 big boilerplate code for veteran and even though there are lot of packages to 
 solve this issue none were exactly as straight forward as they try to be.
