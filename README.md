@@ -82,7 +82,13 @@ worker.send(6);
 
 ```
 
-3. ### What about simple one time tasks?
+3. ### Dispose when not needed anymore
+
+```dart
+worker.dispose()
+```
+
+4. ### What about simple one time tasks?
 
 ```dart
 /// just call compute and pass your entrypoint and payload
@@ -91,6 +97,8 @@ final result = await EasyWorker.compute(calculateFactorial, 5);
 print(result); // 120
 
 ```
+
+
 
 
 ## Additional information
