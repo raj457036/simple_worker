@@ -1,6 +1,6 @@
 name: easy_worker
 description: A package to make isolate usage as easy as possible.
-version: 0.0.2
+version: 0.0.3
 homepage: https://github.com/raj457036/simple_worker
 repository: https://github.com/raj457036/simple_worker
 
