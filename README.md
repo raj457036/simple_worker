@@ -1,11 +1,10 @@
 # Easy Worker
 
 Working with Dart Isolate is not very easy for beginners and tedious to write
-big boilerplate code for veteran and even though there are lot of packages to 
+big boilerplate code for veteran and even though there are lot of packages to
 solve this issue none were exactly as straight forward as they try to be.
 
-Well then **EasyWorker** might be the simplest way to work with dart isolate
-so far. (🙂 if you don't think so not my problem.) 
+Well then **EasyWorker** might be the simplest way to work with dart isolate so far.
 
 ## Features
 
@@ -62,6 +61,7 @@ final worker = EasyWorker(
 2. ### Now how to send and receive to and from this worker?
 
 - get the first result only
+
 ```dart
 final result = await worker.stream.first;
 ```
@@ -74,9 +74,10 @@ worker.onMessage((message) {
 });
 ```
 
-- Send Message to the worker 
+- Send Message to the worker
+
 ```dart
-/// send 6 as payload to the worker to get the factorial of 
+/// send 6 as payload to the worker to get the factorial of
 /// 6.
 worker.send(6);
 
@@ -98,21 +99,18 @@ print(result); // 120
 
 ```
 
-
-
-
 ## Additional information
 
 FAQ:
 
 1. Why this package if there are already other who are doing the same?
-- Read the Top of this readme please.
 
-2. I don't like this!
-- No issue man! just use whatever fits your need.
+- Basically all of them just have a learning curve and there technicalities, this package doesn't.
 
-3. I want to implement something. how to do it?
-- You can ask me on github by creating an issue. i will try to answer.
+2. I want to implement something. how to do it?
 
-## License 
-- MIT 
+- You can create a feature request on github.
+
+## License
+
+- MIT
