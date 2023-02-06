@@ -20,7 +20,7 @@ Well then **EasyWorker** might be the simplest way to work with dart isolate so 
 dependencies:
   flutter:
     sdk: flutter
-  simple_worker:
+  easy_worker:
   ...
 ```
 
