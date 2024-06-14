@@ -51,6 +51,7 @@ void calculateFactorial(int number, Sender send) {
 - **A easy worker instance**
 
 ```dart
+// EasyWorker<Result Type, Input Type>
 final worker = EasyWorker<int, int>(
   Entrypoint(calculateFactorial),
   workerName: "Factorial Calculator",
