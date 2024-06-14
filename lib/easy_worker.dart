@@ -4,7 +4,7 @@ import 'dart:async';
 import 'dart:isolate';
 
 typedef Sender = void Function(Object? message);
-typedef WorkerEntrypoint<T> = Function(T message, Sender send);
+typedef WorkerEntrypoint<I> = void Function(I message, Sender send);
 
 class _WorkerExit {}
 
@@ -19,8 +19,10 @@ class _WorkerExit {}
 /// as long as it can be called with just a single argument.
 /// The function must not be the value of a function expression or
 /// an instance method tear-off.
+///
+/// [I] : Input Type
 /// {@endtemplate}
-class Entrypoint<T> {
+class Entrypoint<I> {
   /// The [entry] function must be a top-level function or a static method
   /// that can be called with a single argument, that is, a compile-time
   /// constant function value which accepts at least one positional
@@ -29,7 +31,7 @@ class Entrypoint<T> {
   /// as long as it can be called with just a single argument.
   /// The function must not be the value of a function expression or
   /// an instance method tear-off.
-  final WorkerEntrypoint<T> entry;
+  final WorkerEntrypoint<I> entry;
 
   /// {@macro entrypoint}
   Entrypoint(this.entry);
@@ -56,11 +58,12 @@ class Entrypoint<T> {
 /// spawned isolate. The entry-point function is invoked in the new isolate
 /// with [message] as the only argument.
 /// {@endtemplate}
-class EasyWorker {
+class EasyWorker<R, I> {
+  /// {@macro worker}
   EasyWorker(
-    void Function(SendPort from) entrypoint, {
+    Entrypoint<I> entrypoint, {
     required String workerName,
-    dynamic initialMessage,
+    I? initialMessage,
     bool paused = false,
     bool errorsAreFatal = true,
     SendPort? onExit,
@@ -69,7 +72,8 @@ class EasyWorker {
     _fromIsolate.listen((message) {
       if (message is SendPort) {
         _toIsolate = message;
-        if (!_firstMessageDelivered) {
+        _ready.complete(true);
+        if (!_firstMessageDelivered && initialMessage != null) {
           send(initialMessage);
           _firstMessageDelivered = true;
         }
@@ -89,14 +93,12 @@ class EasyWorker {
       errorsAreFatal: errorsAreFatal,
     ).then((value) {
       isolate = value;
-      Future.delayed(
-          const Duration(milliseconds: 50), () => _ready.complete(true));
     });
   }
 
   bool _firstMessageDelivered = false;
   final _ready = Completer<bool>();
-  final StreamController _controller = StreamController.broadcast();
+  final _controller = StreamController<R>.broadcast();
   late final SendPort _toIsolate;
   final ReceivePort _fromIsolate;
 
@@ -107,11 +109,11 @@ class EasyWorker {
   bool get isReady => _ready.isCompleted;
 
   /// listen for any message from this worker
-  Stream get stream => _controller.stream;
+  Stream<R> get stream => _controller.stream;
 
   /// listen for any message from this worker
-  StreamSubscription<dynamic> onMessage(
-    void Function(dynamic)? onData, {
+  StreamSubscription onMessage(
+    void Function(R)? onData, {
     Function? onError,
     void Function()? onDone,
     bool? cancelOnError,
@@ -124,7 +126,7 @@ class EasyWorker {
       );
 
   /// send message to this worker
-  Future<void> send(message) async {
+  Future<void> send(I message) async {
     _toIsolate.send(message);
   }
 
@@ -154,14 +156,14 @@ class EasyWorker {
   void resume() => isolate.resume(isolate.pauseCapability!);
 
   /// Spin up a short lived worker, execute the [entrypoint] and get the result
-  static Future<R> compute<R, T>(
-    WorkerEntrypoint<T> entrypoint,
-    T payload, {
+  static Future<R> compute<R, I>(
+    WorkerEntrypoint<I> entrypoint,
+    I payload, {
     String name = "",
   }) async {
     final onError = ReceivePort();
-    final worker = EasyWorker(
-      Entrypoint(entrypoint),
+    final worker = EasyWorker<R, I>(
+      Entrypoint<I>(entrypoint),
       workerName: "compute${name.trim().isEmpty ? "" : ":$name"}",
       initialMessage: payload,
       onError: onError.sendPort,

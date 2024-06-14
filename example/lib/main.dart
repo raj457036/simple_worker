@@ -35,7 +35,7 @@ class _MyHomePageState extends State<MyHomePage> {
   int _counter = 0;
 
   /// declare worker
-  late final EasyWorker worker;
+  late final EasyWorker<int, int> worker;
 
   @override
   void initState() {
@@ -93,7 +93,7 @@ class _MyHomePageState extends State<MyHomePage> {
           children: <Widget>[
             Text(
               'Factorial of $_counter is',
-              style: Theme.of(context).textTheme.headline2,
+              style: Theme.of(context).textTheme.displayMedium,
             ),
 
             /// showing the messages/result received from the worker.
@@ -111,7 +111,7 @@ class _MyHomePageState extends State<MyHomePage> {
 
                 return Text(
                   snapshot.data.toString(),
-                  style: Theme.of(context).textTheme.headline1,
+                  style: Theme.of(context).textTheme.displayLarge,
                 );
               },
             ),

@@ -14,7 +14,7 @@ Well then **EasyWorker** might be the simplest way to work with dart isolate so 
 
 ## Getting started
 
-### Add `simple_worker` to `pubspec.yaml`
+### Add `easy_worker` to `pubspec.yaml`
 
 ```yaml
 dependencies:
@@ -48,14 +48,16 @@ void calculateFactorial(int number, Sender send) {
   }
 ```
 
-- **A simple worker instance**
+- **A easy worker instance**
 
 ```dart
-final worker = EasyWorker(
-      Entrypoint(calculateFactorial),
-      workerName: "Factorial Calculator",
-      initialMessage: 0, // the initial payload for this worker will be 0
-    );
+final worker = EasyWorker<int>(
+  Entrypoint(calculateFactorial),
+  workerName: "Factorial Calculator",
+  initialMessage: 0, // Optional: Initial payload for this worker will be 0
+);
+
+await worker.waitUntilReady();
 ```
 
 2. ### Now how to send and receive to and from this worker?
@@ -80,7 +82,6 @@ worker.onMessage((message) {
 /// send 6 as payload to the worker to get the factorial of
 /// 6.
 worker.send(6);
-
 ```
 
 3. ### Dispose when not needed anymore
