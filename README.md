@@ -51,7 +51,7 @@ void calculateFactorial(int number, Sender send) {
 - **A easy worker instance**
 
 ```dart
-final worker = EasyWorker<int>(
+final worker = EasyWorker<int, int>(
   Entrypoint(calculateFactorial),
   workerName: "Factorial Calculator",
   initialMessage: 0, // Optional: Initial payload for this worker will be 0
@@ -94,7 +94,7 @@ worker.dispose()
 
 ```dart
 /// just call compute and pass your entrypoint and payload
-final result = await EasyWorker.compute(calculateFactorial, 5);
+final result = await EasyWorker.compute<int, int>(calculateFactorial, 5);
 
 print(result); // 120
 
