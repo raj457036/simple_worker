@@ -7,7 +7,7 @@ import 'package:easy_worker/utils.dart';
 
 typedef Sender = void Function(Object? message);
 typedef WorkerEntrypoint<I> = void Function(I message, Sender send);
-typedef VoidCallback = Future<void> Function();
+typedef PayloadCallback = Future<void> Function(Object? payload);
 
 class _WorkerExit {}
 
@@ -35,13 +35,19 @@ class Entrypoint<I> {
   /// The function must not be the value of a function expression or
   /// an instance method tear-off.
   final WorkerEntrypoint<I> entry;
-  final VoidCallback? onInit;
+  final Object? initData;
+  final PayloadCallback? onInit;
 
   /// {@macro entrypoint}
-  Entrypoint(this.entry, {this.onInit});
+  Entrypoint(this.entry, {this.onInit, this.initData}) {
+    assert(
+      (initData != null && onInit != null) || initData == null,
+      "InitData only allowed when onInit is defined.",
+    );
+  }
 
   Future<void> call(SendPort sendport) async {
-    await onInit?.call();
+    await onInit?.call(initData);
     final receivePort = ReceivePort();
     sendport.send(receivePort.sendPort);
     receivePort.listen((message) {
@@ -165,17 +171,23 @@ class EasyWorker<R, I> {
     WorkerEntrypoint<I> entrypoint,
     I payload, {
     String name = "",
-    VoidCallback? onInit,
+    PayloadCallback? onInit,
+    Object? initData,
   }) async {
     final onError = ReceivePort();
     final worker = EasyWorker<R, I>(
-      Entrypoint<I>(entrypoint, onInit: onInit),
+      Entrypoint<I>(
+        entrypoint,
+        onInit: onInit,
+        initData: initData,
+      ),
       workerName: "compute${name.trim().isEmpty ? "" : ":$name"}",
       initialMessage: payload,
       onError: onError.sendPort,
     );
     final Completer<R> completer = Completer<R>();
     try {
+      await worker.waitUntilReady();
       worker.stream.take(1).listen((event) => completer.complete(event));
       onError.take(1).listen((event) => completer.completeError(event));
 
@@ -183,6 +195,7 @@ class EasyWorker<R, I> {
 
       return result;
     } catch (e) {
+      completer.completeError(e);
       rethrow;
     } finally {
       onError.close();
@@ -201,11 +214,15 @@ class EasyWorker<R, I> {
 typedef MessageWithID<R> = (String, R);
 
 class ComputeEntrypoint<I> extends Entrypoint<I> {
-  ComputeEntrypoint(super.entry, {super.onInit});
+  ComputeEntrypoint(
+    super.entry, {
+    super.onInit,
+    super.initData,
+  });
 
   @override
   Future<void> call(SendPort sendport) async {
-    await onInit?.call();
+    await onInit?.call(initData);
     final ReceivePort receivePort = ReceivePort();
     sendport.send(receivePort.sendPort);
     receivePort.listen((message) {

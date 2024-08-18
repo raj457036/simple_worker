@@ -1,3 +1,7 @@
+## 1.2.3
+
+- Payload based Entrypoint initialization by passing initData to Entrypoint/ComputeEntrypoint/EasyWorker.compute
+
 ## 1.2.2
 
 - Add onInit in Entrypoint to be called before setup inside the isolate itself.
