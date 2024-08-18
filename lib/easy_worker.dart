@@ -7,6 +7,7 @@ import 'package:easy_worker/utils.dart';
 
 typedef Sender = void Function(Object? message);
 typedef WorkerEntrypoint<I> = void Function(I message, Sender send);
+typedef VoidCallback = Future<void> Function();
 
 class _WorkerExit {}
 
@@ -34,11 +35,13 @@ class Entrypoint<I> {
   /// The function must not be the value of a function expression or
   /// an instance method tear-off.
   final WorkerEntrypoint<I> entry;
+  final VoidCallback? onInit;
 
   /// {@macro entrypoint}
-  Entrypoint(this.entry);
+  Entrypoint(this.entry, {this.onInit});
 
-  void call(SendPort sendport) {
+  Future<void> call(SendPort sendport) async {
+    await onInit?.call();
     final receivePort = ReceivePort();
     sendport.send(receivePort.sendPort);
     receivePort.listen((message) {
@@ -162,10 +165,11 @@ class EasyWorker<R, I> {
     WorkerEntrypoint<I> entrypoint,
     I payload, {
     String name = "",
+    VoidCallback? onInit,
   }) async {
     final onError = ReceivePort();
     final worker = EasyWorker<R, I>(
-      Entrypoint<I>(entrypoint),
+      Entrypoint<I>(entrypoint, onInit: onInit),
       workerName: "compute${name.trim().isEmpty ? "" : ":$name"}",
       initialMessage: payload,
       onError: onError.sendPort,
@@ -197,10 +201,11 @@ class EasyWorker<R, I> {
 typedef MessageWithID<R> = (String, R);
 
 class ComputeEntrypoint<I> extends Entrypoint<I> {
-  ComputeEntrypoint(super.entry);
+  ComputeEntrypoint(super.entry, {super.onInit});
 
   @override
-  void call(SendPort sendport) {
+  Future<void> call(SendPort sendport) async {
+    await onInit?.call();
     final ReceivePort receivePort = ReceivePort();
     sendport.send(receivePort.sendPort);
     receivePort.listen((message) {

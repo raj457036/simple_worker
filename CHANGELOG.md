@@ -1,3 +1,8 @@
+## 1.2.2
+
+- Add onInit in Entrypoint to be called before setup inside the isolate itself.
+- Readme updated
+
 ## 1.2.1
 
 - Readme updated
