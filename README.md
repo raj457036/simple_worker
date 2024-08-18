@@ -26,7 +26,7 @@ dependencies:
 
 ## Usage
 
-1. ### For long running task and bidirectional communication between your main isolate and the worker isolate, You will need two things:
+### For long running task and bidirectional communication between your main isolate and the worker isolate, You will need two things:
 
 - **A static or top level function for example this factorial calculator**
 
@@ -48,7 +48,11 @@ void calculateFactorial(int number, Sender send) {
   }
 ```
 
-- **A easy worker instance**
+- **A EasyWorker or EasyCompute instance**
+
+## A. With EasyWorker
+
+1. Create an instance of EasyWorker
 
 ```dart
 // EasyWorker<Result Type, Input Type>
@@ -61,7 +65,7 @@ final worker = EasyWorker<int, int>(
 await worker.waitUntilReady();
 ```
 
-2. ### Now how to send and receive to and from this worker?
+2. Now how to send and receive to and from this worker?
 
 - get the first result only
 
@@ -85,13 +89,37 @@ worker.onMessage((message) {
 worker.send(6);
 ```
 
-3. ### Dispose when not needed anymore
+## B. **(NEW)** With EasyCompute : Resuable isolates for high performance apps.
+
+1. Create an instance of EasyWorker
+
+```dart
+// EasyWorker<Result Type, Input Type>
+final worker = EasyCompute<int, int>(
+  ComputeEntrypoint(calculateFactorial),
+  workerName: "Factorial Calculator",
+);
+
+await worker.waitUntilReady();
+```
+
+2. Get results
+
+```dart
+final result = await worker.compute(6);
+
+print(result); //
+```
+
+### Dispose when not needed anymore
 
 ```dart
 worker.dispose()
 ```
 
-4. ### What about simple one time tasks?
+## FAQs
+
+1. What about simple one time tasks?
 
 ```dart
 /// just call compute and pass your entrypoint and payload

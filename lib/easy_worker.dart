@@ -3,6 +3,8 @@ library isolate_helper;
 import 'dart:async';
 import 'dart:isolate';
 
+import 'package:easy_worker/utils.dart';
+
 typedef Sender = void Function(Object? message);
 typedef WorkerEntrypoint<I> = void Function(I message, Sender send);
 
@@ -37,7 +39,7 @@ class Entrypoint<I> {
   Entrypoint(this.entry);
 
   void call(SendPort sendport) {
-    final ReceivePort receivePort = ReceivePort();
+    final receivePort = ReceivePort();
     sendport.send(receivePort.sendPort);
     receivePort.listen((message) {
       if (message is _WorkerExit) {
@@ -167,7 +169,6 @@ class EasyWorker<R, I> {
       workerName: "compute${name.trim().isEmpty ? "" : ":$name"}",
       initialMessage: payload,
       onError: onError.sendPort,
-      // onError: onError.sendPort,
     );
     final Completer<R> completer = Completer<R>();
     try {
@@ -190,5 +191,80 @@ class EasyWorker<R, I> {
     _controller.close();
     _toIsolate.send(_WorkerExit());
     _fromIsolate.close();
+  }
+}
+
+typedef MessageWithID<R> = (String, R);
+
+class ComputeEntrypoint<I> extends Entrypoint<I> {
+  ComputeEntrypoint(super.entry);
+
+  @override
+  void call(SendPort sendport) {
+    final ReceivePort receivePort = ReceivePort();
+    sendport.send(receivePort.sendPort);
+    receivePort.listen((message) {
+      if (message is _WorkerExit) {
+        receivePort.close();
+        return;
+      }
+
+      if (message is MessageWithID<I>) {
+        final (id, payload) = message;
+        entry(payload, (response) {
+          sendport.send((id, response));
+        });
+        return;
+      }
+
+      entry(message, sendport.send);
+    });
+  }
+}
+
+class EasyCompute<R, I> extends EasyWorker<MessageWithID<R>, I> {
+  StreamSubscription? _subscription;
+  final Duration? timeoutDuration;
+  final _tasks = <String, Completer<R>>{};
+
+  EasyCompute(
+    ComputeEntrypoint<I> entrypoint, {
+    required String workerName,
+    this.timeoutDuration,
+  }) : super(entrypoint, workerName: workerName) {
+    _subscription = onMessage(onData);
+  }
+
+  void onData(MessageWithID<R> data) {
+    final (id, result) = data;
+
+    final completer = _tasks.remove(id);
+    if (completer == null) return;
+    completer.complete(result);
+  }
+
+  Future<R> compute(I payload) async {
+    final completer = Completer<R>();
+    final id = getID();
+    _tasks[id] = completer;
+    _toIsolate.send((id, payload));
+
+    try {
+      final future = completer.future;
+
+      if (timeoutDuration != null) {
+        return await future.timeout(timeoutDuration!);
+      }
+      return await future;
+    } catch (e) {
+      _tasks.remove(id);
+      rethrow;
+    }
+  }
+
+  @override
+  void dispose() {
+    _subscription?.cancel();
+    super.dispose();
   }
 }
