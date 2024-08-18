@@ -91,10 +91,10 @@ worker.send(6);
 
 ## B. **(NEW)** With EasyCompute : Resuable isolates for high performance apps.
 
-1. Create an instance of EasyWorker
+1. Create an instance of EasyCompute
 
 ```dart
-// EasyWorker<Result Type, Input Type>
+// EasyCompute<Result Type, Input Type>
 final worker = EasyCompute<int, int>(
   ComputeEntrypoint(calculateFactorial),
   workerName: "Factorial Calculator",

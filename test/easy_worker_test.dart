@@ -11,7 +11,7 @@ void calculateFactorial(int number, Sender send) {
     number--;
     // just to simulate long running task with blocking operation
     // (operation that can freeze the ui thread)
-    sleep(const Duration(milliseconds: 200));
+    sleep(const Duration(milliseconds: 500));
   }
 
   /// once done send the calculated result to the parent process
@@ -34,7 +34,41 @@ void main() {
       10: 3628800,
     };
 
-    // Run tests in parallel
+    final results = await Future.wait(testCases.entries.map((entry) async {
+      final result = await worker.compute(entry.key);
+      return result == entry.value;
+    }));
+
+    expect(results.every((result) => result), isTrue);
+
+    worker.dispose();
+  });
+
+  test('Test long running worker with EasyCompute', () async {
+    final worker = EasyCompute<int, int>(
+      ComputeEntrypoint((message, send) async {
+        // return series of number upto 4 at an interval of 1 sec
+
+        int sum = 0;
+        for (var i = 1; i <= message; i++) {
+          sum += i;
+          await Future.delayed(const Duration(seconds: 1));
+        }
+
+        send(sum);
+      }),
+      workerName: "Summer",
+    );
+
+    await worker.waitUntilReady();
+
+    final testCases = {
+      5: 15,
+      3: 6,
+      7: 28,
+      10: 55,
+    };
+
     final results = await Future.wait(testCases.entries.map((entry) async {
       final result = await worker.compute(entry.key);
       return result == entry.value;
@@ -46,7 +80,7 @@ void main() {
     worker.dispose();
   });
 
-  test('Test long running worker', () async {
+  test('Test long running EasyWorker', () async {
     final worker = EasyWorker<int, String>(
       Entrypoint((message, send) async {
         // return series of number upto 4 at an interval of 1 sec
@@ -69,44 +103,6 @@ void main() {
       worker.stream,
       emitsInOrder([4, 3, 2, 1]),
     );
-
-    worker.dispose();
-  });
-
-  test('Test long running worker with easy compute', () async {
-    final worker = EasyCompute<int, int>(
-      ComputeEntrypoint((message, send) async {
-        // return series of number upto 4 at an interval of 1 sec
-
-        int sum = 0;
-        for (var i = 1; i <= message; i++) {
-          sum += i;
-          await Future.delayed(const Duration(seconds: 1));
-        }
-
-        send(sum);
-      }),
-      workerName: "Summer",
-    );
-
-    await worker.waitUntilReady();
-
-    // List of test cases
-    final testCases = {
-      5: 15,
-      3: 6,
-      7: 28,
-      10: 55,
-    };
-
-    // Run tests in parallel
-    final results = await Future.wait(testCases.entries.map((entry) async {
-      final result = await worker.compute(entry.key);
-      return result == entry.value;
-    }));
-
-    // Assert that all results are true
-    expect(results.every((result) => result), isTrue);
 
     worker.dispose();
   });

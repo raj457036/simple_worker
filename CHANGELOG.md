@@ -1,3 +1,7 @@
+## 1.2.1
+
+- Readme updated
+
 ## 1.2.0
 
 - Added EasyCompute for long running process just like EasyWorker but without stream management.
